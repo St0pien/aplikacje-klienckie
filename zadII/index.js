@@ -93,11 +93,12 @@ function zad2() {
 
 ////// zad 3 //////
 function zad3 () {
-    const input = prompt('wklej zdanie', 'te ;kljasdf te te, te. ote. ten, te. te,');
+    const input = prompt('wklej zdanie', 'te, TE, TE, TE., TE ;kljasdf te te, te. ote. ten, te. te,');
     const word = prompt('szukane słowo');
 
-    const interRegex = /[,.]/g;
-    const result = input.split(' ').map(wrd => wrd.toLowerCase().replaceAll(interRegex, '') === word ? `<u>${word}</u>${wrd != word ? interRegex.exec(wrd) : ''}` : wrd).join(' ');
+    const regex = new RegExp(`^(${word})(?=[,.!?]?$)`, 'gi');
+    console.log(regex);
+    const result = input.split(' ').map(wrd => wrd.replace(regex, `<u>${wrd.match(regex)}</u>`)).join(' ');
 
     document.write(result);
 }
@@ -126,4 +127,4 @@ function zad4() {
     });
 }
 
-zad4();
+zad3();
