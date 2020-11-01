@@ -1,0 +1,92 @@
+:root {
+    --size: 30px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.wrapper {
+    margin: auto;
+    height: 100%;
+    display: flex;
+    margin-top: 50px;
+    justify-content: space-evenly;
+}
+
+.trash {
+    display: none;
+}
+
+@media (min-width: 1920px) {
+    .wrapper {
+        width: 1000px;
+    }
+}
+
+.auto {
+    padding: 5px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    background: linear-gradient(lightgreen, green);
+    cursor: pointer;
+}
+
+.checkbox {
+    margin: 20px 0;
+}
+
+.auto:active {
+    background: linear-gradient(green, lightgreen);
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td {
+    border: 2px solid darkgray;
+    width: var(--size);
+    height: var(--size);
+}
+
+.td--active {
+    background: green;
+}
+
+.ship {
+    background: black;
+}
+
+.td--wrong {
+    background: red;
+}
+
+.ship--player {
+    display: flex;
+    margin: 10px 0;
+    width: fit-content;
+}
+
+.ship--player:hover .ship--square {
+    background: blue;
+}
+
+.ship--active:hover .ship--square {
+    background: green;
+}
+
+.ship--active .ship--square {
+    background: green;
+}
+
+.ship--square:last-child {
+    border-right: none;
+}
+
+.ship--square {
+    width: var(--size);
+    height: var(--size);
+    background: black;
+    border-right: solid 2px gray;
+}
