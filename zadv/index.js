@@ -157,8 +157,6 @@ function removePlayerShip(field, playerMap, map, panel) {
         });
     });
 
-    console.log(map);
-
     const trash = [...document.querySelector('.trash').childNodes];
     const panelShip = trash.find(ship => ship.children.length == shipSize);
     panelShip.classList.remove('ship--active');
