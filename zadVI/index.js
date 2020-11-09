@@ -441,7 +441,7 @@ function calculateBestMove(table) {
             if (!move) break;
             if (!checkIfFree(table, move.x, move.y)) blacklistMoves.push(move);
         } while (blacklistMoves.findIndex(m => m.x == move.x && move.y == m.y) > -1)
-        if (move) return move;
+        if (move !== undefined) return move;
     }
         
     const r = Math.floor(Math.random() * size);
@@ -463,6 +463,8 @@ function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
 
         return makeComputerMove(playerTable, playerMap, computerMap, computerTable);
     } 
+
+    console.log(blacklistMoves);
 
     setTimeout(() => {
         if (field.classList.contains('ship')) {
@@ -582,7 +584,7 @@ function restartGame() {
 const size = 10;
 const computerTargets = [];
 const blacklistMoves = [];
-let computerNextMoves = [];
+let computerNextMoves = [{ x:9, y:2}];
 const computerMoveTime = 1000;
 const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 const points = ships.reduce((acc, curr) => acc+curr);
