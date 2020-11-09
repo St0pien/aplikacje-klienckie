@@ -583,7 +583,7 @@ const size = 10;
 const computerTargets = [];
 const blacklistMoves = [];
 let computerNextMoves = [];
-const computerMoveTime = 100;
+const computerMoveTime = 1000;
 const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 const points = ships.reduce((acc, curr) => acc+curr);
 
