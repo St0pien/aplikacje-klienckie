@@ -1,0 +1,161 @@
+:root {
+    --size: 35px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #111;
+    color: white;
+}
+
+.wrapper {
+    margin: auto;
+    height: 100%;
+    display: flex;
+    margin-top: 50px;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.trash {
+    display: none;
+}
+
+@media (min-width: 1920px) {
+    .wrapper {
+        width: 1000px;
+    }
+}
+
+.auto {
+    padding: 5px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    background: linear-gradient(red, rgb(66, 0, 0));
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+.checkbox {
+    margin: 20px 0;
+}
+
+.auto:active {
+    background: linear-gradient(rgb(66, 0, 0), red);
+}
+
+table {
+    border-collapse: collapse;
+    background-image: url('img/map.gif');
+    margin-top: 15px;
+}
+
+td {
+    border: 2px solid rgb(28, 28, 82);
+    width: var(--size);
+    height: var(--size);
+}
+
+.td--active {
+    background: green;
+}
+
+.ship {
+    background: #111;
+}
+
+.td--wrong {
+    background: red;
+}
+
+.ship--player {
+    display: flex;
+    margin: 10px 0;
+    width: fit-content;
+}
+
+.ship--player:hover .ship--square {
+    background: blue;
+}
+
+.ship--active:hover .ship--square {
+    background: green;
+}
+
+.ship--active .ship--square {
+    background: green;
+}
+
+.ship--square:last-child {
+    border-right: none;
+}
+
+.ship--square {
+    width: var(--size);
+    height: var(--size);
+    background: darkgray;
+    border-right: solid 2px gray;
+}
+
+.start {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    padding: 10px 30px;
+    font-weight: bold;
+    background: linear-gradient(red, rgb(66, 0, 0));
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    margin-top: 30px;
+    cursor: pointer;
+    font-size: 1.5em;
+}
+
+.start:active {
+    background: linear-gradient(rgb(66, 0, 0), red);
+}
+
+.restart {
+    position: absolute;
+    left: 50%;
+    padding: 10px 30px;
+    font-weight: bold;
+    background: linear-gradient(red, rgb(66, 0, 0));
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    margin-top: 250px;
+    cursor: pointer;
+    transform: translate(-50%);
+}
+
+.inactive {
+    display: none;
+}
+
+.label {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+.hit {
+    background-image: url('img/fire.gif');
+    background-size: cover;
+}
+
+.miss {
+    background: url('img/splash.gif');
+    background-size: cover;
+}
+
+.destroyed {
+    background: url('img/smoke.gif');
+    background-size: cover;
+}
