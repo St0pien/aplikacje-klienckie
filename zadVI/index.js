@@ -582,7 +582,7 @@ function restartGame() {
 const size = 10;
 const computerTargets = [];
 const blacklistMoves = [];
-let computerNextMoves = [{ x:9, y:2}];
+let computerNextMoves = [];
 const computerMoveTime = 100;
 const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 const points = ships.reduce((acc, curr) => acc+curr);
