@@ -456,6 +456,10 @@ function calculateBestMove(table) {
 }
 
 function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
+    if (checkWin(playerTable, 'Computer WON!', computerMap, computerTable)) {
+        return;
+    }
+
     const { x, y } = calculateBestMove(playerTable);
     const field = playerTable.querySelector(`td[data-x="${x}"][data-y="${y}"]`);
     if (isHit(field)) {
@@ -476,10 +480,6 @@ function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
             return makeComputerMove(playerTable, playerMap, computerMap, computerTable);
         } else {
             field.classList.add('miss');
-        }
-
-        if (checkWin(playerTable, 'Computer WON!', computerMap, computerTable)) {
-            return;
         }
         
         label.innerHTML = "Player";
