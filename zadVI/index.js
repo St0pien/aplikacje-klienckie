@@ -399,56 +399,63 @@ function checkIfFree(table, r, f) {
 }
 
 function calculateBestMove(table) {
-    if (computerTargets.length > 0) {
-        if (computerTargets.filter(({ x }) => x == computerTargets[0].x).length == computerTargets.length || computerTargets.length == 1) {
-            computerTargets.forEach(target => {
-                for (let i=-1; i<=1; i+=2) {
-                    const newMove = {
-                        x: target.x,
-                        y: target.y+i
-                    }
-
-                    if (newMove.y < 0 || newMove.y >= size) continue;
-
-                    if (computerNextMoves.findIndex(move => move.x == newMove.x && move.y == newMove.y) == -1) {
-                        computerNextMoves.push(newMove);
-                    }
+    // Get possible fields
+    computerTargets.forEach(({ x, y }) => {
+        for (let i=-1; i<=1; i++) {
+            for (let j=-1; j<=1; j++) {
+                if (Math.abs(i) == Math.abs(j)) continue;
+                const move = {
+                    x: x+i,
+                    y: y+j
                 }
-            });
+                if (computerNextMoves.findIndex(m => m.x == move.x && m.y == move.y) == -1) {
+                    computerNextMoves.push(move);
+                }
+            }
         }
-        if (computerTargets.filter(({ y }) => y == computerTargets[0].y).length == computerTargets.length || computerTargets.length == 1) {
-            computerTargets.forEach(target => {
-                for (let i=-1; i<=1; i+=2) {
-                    const newMove = {
-                        x: target.x+i,
-                        y: target.y
-                    }
+    });
 
-                    if (newMove.x < 0 || newMove.x >= size) continue;
-                    
-                    if (computerNextMoves.findIndex(move => move.x == newMove.x && move.y == newMove.y) == -1) {
-                        computerNextMoves.push(newMove);
-                    }
-                }
-            });
+    // Filter next moves
+
+    // Must be inside map
+    computerNextMoves = computerNextMoves.filter(move => {
+        const xCondition = move.x >= 0 && move.x < size;
+        const yCondition = move.y >= 0 && move.y < size;
+        return xCondition && yCondition;
+    });
+
+    // Find axis
+    if (computerTargets.length > 1) {
+        let key = computerTargets[0].x;
+        if (computerTargets.every(target => key == target.x)) {
+            computerNextMoves = computerNextMoves.filter(move => move.x == key);
+        } else {
+            key = computerTargets[0].y;
+            computerNextMoves = computerNextMoves.filter(move => move.y == key);
         }
     }
 
+    // Field must be free (no ships nearby, and not shot)
+    computerNextMoves = computerNextMoves.filter(move => {
+        const field = table.querySelector(`td[data-x="${move.x}"][data-y="${move.y}"]`);
+        if (checkIfFree(table, move.x, move.y) && !isHit(field)) {
+            blacklistMoves.push(move);
+            return true;
+        }
+        return false;
+    });
+
+    // Pop next move
     if (computerNextMoves.length > 0) {
-        let move;
-        do {
-            move = computerNextMoves.pop();
-            if (!move) break;
-            if (!checkIfFree(table, move.x, move.y)) blacklistMoves.push(move);
-        } while (blacklistMoves.findIndex(m => m.x == move.x && move.y == m.y) > -1)
-        if (move !== undefined) return move;
+        return computerNextMoves.pop();
     }
-        
+
     const r = Math.floor(Math.random() * size);
     const f = Math.floor(Math.random() * size);
 
-    
-    if (!checkIfFree(table, r, f)) {
+    const field = table.querySelector(`td[data-x="${r}"][data-y="${f}"]`);
+    if (!checkIfFree(table, r, f) || isHit(field)) {
+        blacklistMoves.push({ x: r, y: f });
         return calculateBestMove(table);
     }
     
@@ -462,12 +469,6 @@ function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
 
     const { x, y } = calculateBestMove(playerTable);
     const field = playerTable.querySelector(`td[data-x="${x}"][data-y="${y}"]`);
-    if (isHit(field)) {
-        blacklistMoves.push({ x, y });
-
-        return makeComputerMove(playerTable, playerMap, computerMap, computerTable);
-    } 
-
     setTimeout(() => {
         if (field.classList.contains('ship')) {
             computerTargets.push({ x, y });
