@@ -439,7 +439,6 @@ function calculateBestMove(table) {
     computerNextMoves = computerNextMoves.filter(move => {
         const field = table.querySelector(`td[data-x="${move.x}"][data-y="${move.y}"]`);
         if (checkIfFree(table, move.x, move.y) && !isHit(field)) {
-            blacklistMoves.push(move);
             return true;
         }
         return false;
@@ -455,7 +454,6 @@ function calculateBestMove(table) {
 
     const field = table.querySelector(`td[data-x="${r}"][data-y="${f}"]`);
     if (!checkIfFree(table, r, f) || isHit(field)) {
-        blacklistMoves.push({ x: r, y: f });
         return calculateBestMove(table);
     }
     
@@ -582,7 +580,6 @@ function restartGame() {
 
 const size = 10;
 const computerTargets = [];
-const blacklistMoves = [];
 let computerNextMoves = [];
 const computerMoveTime = 1000;
 const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
