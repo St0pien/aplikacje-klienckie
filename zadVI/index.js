@@ -444,9 +444,11 @@ function calculateBestMove(table) {
         return false;
     });
 
+
     // Pop next move
     if (computerNextMoves.length > 0) {
-        return computerNextMoves.pop();
+        const randIndex = Math.floor(Math.random() * computerNextMoves.length);
+        return computerNextMoves.splice(randIndex, 1)[0];
     }
 
     const r = Math.floor(Math.random() * size);
