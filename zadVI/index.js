@@ -356,19 +356,6 @@ function scanLine(line, index) {
     return indexes;
 }
 
-function destroyShip(x, y, map, table) {
-    const cords = findShip(x, y, map);
-    const fields = [];
-    cords.x.forEach((r) => {
-        cords.y.forEach(f => {
-            fields.push(table.querySelector(`td[data-x="${r}"][data-y="${f}"]`));
-        });
-    });
-    if (fields.every(field => field.classList.contains('hit'))) {
-        fields.forEach(field => field.classList.add('destroyed'));
-    }
-}
-
 function findShip(x, y, map) {
     const row = map[x];
     const column = map.map(r => r[y]);
@@ -383,6 +370,54 @@ function findShip(x, y, map) {
         result.y = shipRow;
     }
     return result;
+}
+
+function destroyShip(shot, map, table) {
+    if (!shot) return;
+
+    const { x, y } = shot;
+    const cords = findShip(x, y, map);
+    const fields = [];
+    cords.x.forEach((r) => {
+        cords.y.forEach(f => {
+            fields.push(table.querySelector(`td[data-x="${r}"][data-y="${f}"]`));
+        });
+    });
+
+    const checkers = [];
+    if (cords.x.length == 1) {
+        const min = {
+            x: cords.x[0],
+            y: Math.min(...cords.y) - 1
+        }
+        const max = {
+            x: cords.x[0],
+            y: Math.max(...cords.y) + 1
+        }
+        checkers.push(min, max);
+    }
+    if (cords.y.length == 1) {
+        const min = {
+            x: Math.min(...cords.x) - 1,
+            y: cords.y[0]
+        }
+        const max = {
+            x: Math.max(...cords.x) + 1,
+            y: cords.y[0]
+        }
+        checkers.push(min, max);
+    }
+    
+    const isChecked = checkers.every(checker => {
+        const field = table.querySelector(`td[data-x="${checker.x}"][data-y="${checker.y}"]`);
+        return field ? field.classList.contains('miss') : true;
+    });
+
+    console.log(isChecked, checkers, fields);
+
+    if (fields.every(field => field.classList.contains('hit')) && isChecked) {
+        fields.forEach(field => field.classList.add('destroyed'));
+    }
 }
 
 function checkIfFree(table, r, f) {
@@ -473,8 +508,9 @@ function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
         if (field.classList.contains('ship')) {
             computerTargets.push({ x, y });
             field.classList.add('hit');
-            destroyShip(x, y, playerMap, playerTable);
+            computerLastHit = { x, y };
             if (field.classList.contains('destroyed')) {
+                console.log('hi');
                 computerNextMoves.splice(0);
                 computerTargets.splice(0);
             }
@@ -482,6 +518,7 @@ function makeComputerMove(playerTable, playerMap, computerMap, computerTable) {
         } else {
             field.classList.add('miss');
         }
+        destroyShip(computerLastHit, playerMap, playerTable);
         
         label.innerHTML = "Player";
         playerMove = true;
@@ -497,11 +534,13 @@ function makePlayerMove(e, map, table) {
 
     if (map[x][y] == 1) {
         field.classList.add('hit');
-        destroyShip(x, y, map, table);
+        playerLastHit = { x, y };
         return;
     } else {
         field.classList.add('miss');
     }
+
+    destroyShip(playerLastHit, map, table);
 
     playerMove = false;
     label.innerHTML = "Computer";
@@ -584,6 +623,10 @@ const size = 10;
 const computerTargets = [];
 let computerNextMoves = [];
 const computerMoveTime = 1000;
+
+let playerLastHit;
+let computerLastHit;
+
 const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 const points = ships.reduce((acc, curr) => acc+curr);
 
