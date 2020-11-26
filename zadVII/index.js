@@ -91,5 +91,5 @@ class Board {
         });
     }
 }
-const board = new Board(3, document.querySelector('.board'), '/img/img3.jpg');
+const board = new Board(4, document.querySelector('.board'), 'img/img2.jpg');
 setTimeout(() => board.randomize(), 1500);

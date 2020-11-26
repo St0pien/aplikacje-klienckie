@@ -1,5 +1,5 @@
 :root {
-    --img-url: url('/img/none');
+    --img-url: url('img/img1.jpg');
     --thumbnail-size: 150px;
     --board-size: 400px;
     --board-res: 3;
