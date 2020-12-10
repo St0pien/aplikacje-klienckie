@@ -53,11 +53,13 @@ class Board {
         return this.squares.find(({ pos }) => x == pos.x && y == pos.y);
     }
 
-    moveSquare(x, y) {
+    moveSquare(x, y, check = true) {
+        if (!this.isActive && check) return;
+
         const square = this.getSquare(x, y);
         square.updatePosition(this.emptyCords.x, this.emptyCords.y);
         this.emptyCords = { x, y };
-        this.checkWin();
+        if (check) this.checkWin();
     }
 
     isLegal(x, y) {
@@ -79,12 +81,13 @@ class Board {
                 y = Math.floor(Math.random() * this.size);
             } while (!this.isLegal(x, y) || lastMove.x == x && lastMove.y == y)
             lastMove = this.emptyCords;
-            this.moveSquare(x, y);
+            this.moveSquare(x, y, false);
             counter++;
 
-            if (counter > this.size*20 ) {
+            if (counter > this.size**3) {
                 clearInterval(handler);
                 this.randomizeCallback();
+                this.isActive = true;
             } 
         }, 10);
     }
@@ -105,7 +108,10 @@ class Board {
             if (correctPos.y != pos.y) return false;
             return true;
         })
-        if (condition) this.winCallback();
+        if (condition) {
+            this.isActive = false;
+            this.winCallback();
+        }
     }
 }
 
@@ -130,7 +136,7 @@ class Timer {
         clearInterval(this.interval);
     }
 
-    static format(num, range) {
+    static formatNum(num, range) {
         if (num.toString().length < range) {
             let result = '';
             for (let i=0; i<range-num.toString().length; i++) {
@@ -141,36 +147,93 @@ class Timer {
         return num;
     }
 
+    static formatTime(time) {
+        const milisecs = Timer.formatNum(time.getMilliseconds(), 3);
+        const secs = Timer.formatNum(time.getSeconds(), 2);
+        const mins = Timer.formatNum(time.getMinutes(), 2);
+        const hours = Timer.formatNum(time.getHours() - 1, 2);
+        return `${hours}${mins}${secs}${milisecs}`;
+    }
+
     updateTime() {
         const time = new Date(new Date() - this.startTime);
         this.currentTime = time;
-        const milisecs = Timer.format(time.getMilliseconds(), 3);
-        const secs = Timer.format(time.getSeconds(), 2);
-        const mins = Timer.format(time.getMinutes(), 2);
-        const hours = Timer.format(time.getHours() - 1, 2);
-        const timeStr = `${hours}${mins}${secs}${milisecs}`
+        const timeStr = Timer.formatTime(time);
         timeStr.split('').forEach((digit, index) => {
             this.digits[index].src = `img/clock/c${digit}.gif`;
         });
     }
 }
 
+class Classification {
+    static parseCookies() {
+        const classRegex = /^classification={.*}$/;
+        const classCookie = document.cookie.split('; ').find(cookie => classRegex.test(cookie));
+        if (!classCookie) return {};
+        return JSON.parse(classCookie.split('=')[1]);
+    }
+
+    static addTime(time, nick, category) {
+        const classObj = Classification.parseCookies();
+        const name = `classification${category}`;
+        if (!classObj[name]) classObj[name] = [];
+        classObj[name].push({ nick, time: time.getTime() });
+        classObj[name] = classObj[name].sort((a, b) => a.time - b.time);
+        classObj[name] = classObj[name].slice(0, 10);
+        document.cookie = `classification=${JSON.stringify(classObj)}; Expires=Wed, 21 Oct 3333 07:28:00 GMT;`;
+    }
+
+    static displayClassification(ref, category) {
+        const classObj = Classification.parseCookies();
+        const name = `classification${category}`;
+        const classification = classObj[name];
+        ref.innerHTML = '';
+        if (!classification) return;
+
+        const frag = document.createDocumentFragment();
+        classification.forEach(({ nick, time }, index) => {
+            const div = document.createElement('div');
+            div.classList.add('top-row');
+            const timeArr = Timer.formatTime(new Date(time)).split('');
+            timeArr.splice(2, 0, ':');
+            timeArr.splice(5, 0, ':');
+            timeArr.splice(8, 0, '.');
+            div.innerHTML = `${index+1}. ${nick} - ${timeArr.join('')}`;
+            frag.appendChild(div);
+        });
+        ref.appendChild(frag);
+    }
+}
+
+function handleWin(timer, nick, category) {
+    timer.stop();
+    Classification.addTime(timer.currentTime, nick, category);
+    Classification.displayClassification(document.querySelector('.top'), parseInt(document.querySelector('.input--size').value));
+}
+
 function main() {
     const button = document.querySelector('.button');
-    const input = document.querySelector('.input-size');
+    const input = document.querySelector('.input--size');
 
     const timerEl = document.querySelector('.timer');
     const timer = new Timer(timerEl);
+
+    const nickEl = document.querySelector('.input--text');
 
     const boardEl = document.querySelector('.board');
     let board;
 
     button.addEventListener('click', () => {
+        timer.stop();
         boardEl.innerHTML = '';
         const size = parseInt(input.value);
-        board = new Board(size, boardEl, 'img/img1.jpg', () => timer.stop(), () => timer.start());
+        board = new Board(size, boardEl, 'img/img2.jpg', () => handleWin(timer, nickEl.value, size), () => timer.start());
         board.randomize();
     });
+
+    const top = document.querySelector('.top');
+    input.addEventListener('change', () => Classification.displayClassification(top, parseInt(input.value)));
+    Classification.displayClassification(top, parseInt(input.value));
 }
 
 main();
