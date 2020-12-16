@@ -205,6 +205,77 @@ class Classification {
     }
 }
 
+class Slider {
+    constructor(ref, imgCount) {
+        this.ref = ref;
+        this.currentImg = 1;
+        this.isScrolling = false;
+        const frag= document.createDocumentFragment();
+        for (let i=1; i<=imgCount; i++) {
+            const img = document.createElement('img');
+            img.src = `img/img${i}.jpg`;
+            frag.appendChild(img);
+        }
+        this.ref.appendChild(frag);
+        this.width = Math.round(this.ref.clientWidth);
+        this.size = imgCount;
+
+        const left = document.querySelector('.left');
+        const right = document.querySelector('.right');
+        left.addEventListener('click', () => this.slideLeft());
+        right.addEventListener('click', () => this.slideRight());
+    }
+
+    getPath() {
+        return `img/img${this.currentImg}.jpg`;
+    }
+
+    slideLeft() {
+        if (this.isScrolling) return;
+
+        this.currentImg--;
+        if (this.currentImg <= 0) {
+            this.currentImg = this.size;
+        }
+
+        this.ref.prepend(this.ref.lastElementChild);
+        this.ref.scrollTo(this.width, 0);
+        this.animateScroll(0);
+    }
+
+    slideRight() {
+        if (this.isScrolling) return;
+
+        this.currentImg++;
+        if (this.currentImg > this.size) {
+            this.currentImg = 1;
+        }
+
+        this.animateScroll(this.width).then(() => {
+            this.ref.appendChild(this.ref.firstElementChild);
+            this.ref.scrollTo(0, 0);
+        });
+    }
+
+    async animateScroll(value) {
+        this.isScrolling = true;
+        this.ref.scrollTo({
+            left: value,
+            behavior: 'smooth',
+            duration: 20000
+        });
+        await new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (Math.round(this.ref.scrollLeft) == value) {
+                    clearInterval(interval);
+                    this.isScrolling = false;
+                    resolve();
+                }
+            });
+        });
+    }
+}
+
 function handleWin(timer, nick, category) {
     timer.stop();
     Classification.addTime(timer.currentTime, nick, category);
@@ -220,6 +291,9 @@ function main() {
 
     const nickEl = document.querySelector('.input--text');
 
+    const sliderEl = document.querySelector('.thumbnail');
+    const slider = new Slider(sliderEl, 7);
+
     const boardEl = document.querySelector('.board');
     let board;
 
@@ -227,8 +301,8 @@ function main() {
         timer.stop();
         boardEl.innerHTML = '';
         const size = parseInt(input.value);
-        board = new Board(size, boardEl, 'img/img2.jpg', () => handleWin(timer, nickEl.value, size), () => timer.start());
-        board.randomize();
+        board = new Board(size, boardEl, slider.getPath(), () => handleWin(timer, nickEl.value, size), () => timer.start());
+        setTimeout(() => board.randomize(), 1000);
     });
 
     const top = document.querySelector('.top');

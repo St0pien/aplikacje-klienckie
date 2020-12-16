@@ -1,5 +1,4 @@
 :root {
-    --img-url: url('img/img1.jpg');
     --thumbnail-size: 150px;
     --board-size: 400px;
     --board-res: 3;
@@ -75,11 +74,35 @@ body {
 }
 
 .thumbnail {
-    background-image: var(--img-url);
-    background-size: cover;
-    background-position: center;
     width: var(--thumbnail-size);
     height: var(--thumbnail-size);
+    display: flex;
+    overflow: hidden;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+}
+
+.left, .right {
+    position: absolute;
+    top: calc(var(--thumbnail-size) / 2);
+    opacity: .5;
+    transition: opacity .2s ease-out;
+}
+
+.left:hover, .right:hover {
+    opacity: 1;   
+}
+
+.right {
+    transform: rotate(180deg);
+    right: calc(50% - var(--thumbnail-size) + 30px);
+}
+
+.left {
+    left: calc(50% - var(--thumbnail-size) + 30px);
 }
 
 .board {
