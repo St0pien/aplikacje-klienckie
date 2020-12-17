@@ -288,12 +288,11 @@ function handleWin(timer, nick, category) {
     timer.stop();
     Classification.addTime(timer.currentTime, nick, category);
     Classification.setNick(nick);
-    Classification.displayClassification(document.querySelector('.top'), parseInt(document.querySelector('.input--size').value));
+    Classification.displayClassification(document.querySelector('.top'), category);
 }
 
 function main() {
-    const button = document.querySelector('.button');
-    const input = document.querySelector('.input--size');
+    const buttons = document.querySelectorAll('.button');
 
     const timerEl = document.querySelector('.timer');
     const timer = new Timer(timerEl);
@@ -307,19 +306,20 @@ function main() {
     const boardEl = document.querySelector('.board');
     let board;
 
-    button.addEventListener('click', () => {
-        timer.stop();
-        timer.startTime = new Date();
-        timer.updateTime();
-        boardEl.innerHTML = '';
-        const size = parseInt(input.value);
-        board = new Board(size, boardEl, slider.getPath(), () => handleWin(timer, nickEl.value, size), () => timer.start());
-        setTimeout(() => board.randomize(), 1000);
-    });
-
     const top = document.querySelector('.top');
-    input.addEventListener('change', () => Classification.displayClassification(top, parseInt(input.value)));
-    Classification.displayClassification(top, parseInt(input.value));
+
+    buttons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            timer.stop();
+            timer.startTime = new Date();
+            timer.updateTime();
+            boardEl.innerHTML = '';
+            const size = 3+index;
+            board = new Board(size, boardEl, slider.getPath(), () => handleWin(timer, nickEl.value, size), () => timer.start());
+            Classification.displayClassification(top, size);
+            setTimeout(() => board.randomize(), 1000);
+        });
+    });
 }
 
 main();
