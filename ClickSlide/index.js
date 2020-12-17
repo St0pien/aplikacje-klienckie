@@ -203,6 +203,14 @@ class Classification {
         });
         ref.appendChild(frag);
     }
+
+    static getNick() {
+        return localStorage.getItem('nick');
+    }
+
+    static setNick(nick) {
+        localStorage.setItem('nick', nick);
+    }
 }
 
 class Slider {
@@ -279,6 +287,7 @@ class Slider {
 function handleWin(timer, nick, category) {
     timer.stop();
     Classification.addTime(timer.currentTime, nick, category);
+    Classification.setNick(nick);
     Classification.displayClassification(document.querySelector('.top'), parseInt(document.querySelector('.input--size').value));
 }
 
@@ -290,6 +299,7 @@ function main() {
     const timer = new Timer(timerEl);
 
     const nickEl = document.querySelector('.input--text');
+    nickEl.value = Classification.getNick();
 
     const sliderEl = document.querySelector('.thumbnail');
     const slider = new Slider(sliderEl, 7);
@@ -299,6 +309,8 @@ function main() {
 
     button.addEventListener('click', () => {
         timer.stop();
+        timer.startTime = new Date();
+        timer.updateTime();
         boardEl.innerHTML = '';
         const size = parseInt(input.value);
         board = new Board(size, boardEl, slider.getPath(), () => handleWin(timer, nickEl.value, size), () => timer.start());
