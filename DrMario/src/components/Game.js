@@ -80,9 +80,9 @@ export class Game {
         const collision = () => {
             if (this.activeRow == 15) return true;
             const underBlocks = [];
-            underBlocks.push(this.grid[this.activeRow+1][this.activeCol]);
+            underBlocks.push(this.grid[this.activeRow + 1][this.activeCol]);
             if (this.activePill.orientation % 2 == 0) {
-                underBlocks.push(this.grid[this.activeRow+1][this.activeCol+1]);
+                underBlocks.push(this.grid[this.activeRow + 1][this.activeCol + 1]);
             }
             if (underBlocks.findIndex(block => block !== undefined) > -1) return true;
             return false;
@@ -90,9 +90,9 @@ export class Game {
         if (collision()) {
             this.grid[this.activeRow][this.activeCol] = this.activePill.blocks.shift();
             if (this.activePill.orientation % 2 == 0) {
-                this.grid[this.activeRow][this.activeCol+1] = this.activePill.blocks.shift();
+                this.grid[this.activeRow][this.activeCol + 1] = this.activePill.blocks.shift();
             } else {
-                this.grid[this.activeRow-1][this.activeCol] = this.activePill.blocks.shift();
+                this.grid[this.activeRow - 1][this.activeCol] = this.activePill.blocks.shift();
             }
             this.activePill = null;
         }
@@ -118,7 +118,7 @@ export class Game {
             return false;
         }
 
-        if (!(xr - this.xOffset <= this.blockSize*8)) {
+        if (!(xr - this.xOffset <= this.blockSize * 8)) {
             return false;
         }
 
@@ -127,31 +127,35 @@ export class Game {
         }
 
         const cords = pill.blocks.map(({ pos }) => {
-            const [ x, y ] = pos;
-            return [(y-this.yOffset) / this.blockSize, (x-this.xOffset) / this.blockSize];
+            const [x, y] = pos;
+            return [(y - this.yOffset) / this.blockSize, (x - this.xOffset) / this.blockSize];
         });
 
         if (cords.findIndex(([row, col]) => this.grid[row][col] != undefined) > -1) {
             return false;
         }
-        
+
         return true;
+    }
+
+    moveLeft() {
+        const [x, y] = this.activePill.pos;
+        const posChange = [x - this.blockSize, y];
+        const futurePill = Object.create(this.activePill);
+        futurePill.updatePos(posChange);
+        if (this.validateMove(futurePill)) {
+            this.activePill.updatePos(posChange);
+            this.activeCol--;
+            this.pauseInput();
+        }
     }
 
     handleInput() {
         if (this.input.keydown('a', 'arrowleft')) {
-            const [ x, y ] = this.activePill.pos;
-            const posChange = [x - this.blockSize, y];
-            const futurePill = Object.create(this.activePill);
-            futurePill.updatePos(posChange);
-            if (this.validateMove(futurePill)) {
-                this.activePill.updatePos(posChange);
-                this.activeCol--;
-                this.pauseInput();
-            }
+            this.moveLeft();
         }
         if (this.input.keydown('d', 'arrowright')) {
-            const [ x, y ] = this.activePill.pos;
+            const [x, y] = this.activePill.pos;
             const posChange = [x + this.blockSize, y];
             const futurePill = Object.create(this.activePill);
             futurePill.updatePos(posChange);
@@ -161,13 +165,16 @@ export class Game {
                 this.pauseInput();
             }
         }
-        
+
         if (this.input.keydown('shift')) {
             const futurePill = Object.create(this.activePill);
             futurePill.rotate(1);
             if (this.validateMove(futurePill)) {
                 this.activePill.rotate(1);
                 this.pauseInput();
+            } else if (this.activeRow != 0 && !this.input.keydown('d', 'arrowright')) {
+                this.moveLeft();
+                this.handleInput();
             }
         }
 
@@ -177,6 +184,9 @@ export class Game {
             if (this.validateMove(futurePill)) {
                 this.activePill.rotate(-1);
                 this.pauseInput();
+            } else if (this.activeRow != 0 && !this.input.keydown('d', 'arrowright')) {
+                this.moveLeft();
+                this.handleInput();
             }
         }
 
