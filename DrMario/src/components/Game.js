@@ -75,6 +75,56 @@ export class Game {
         }, this.inputDelay);
     }
 
+    scanSquare(x, y) {
+        const lines = [];
+        lines.push(this.grid[x])
+        lines.push(this.grid.map(row => row[y]));
+        const toRemove = [];
+
+        lines.forEach(line => {
+            let combo = 0;
+            let color = null;
+            const blocks = [];
+
+            for (let block of line) {
+                if (!(block && block.color == color)) {
+                    if (combo < 4) {
+                        blocks.splice(-combo);
+                    } else {
+                        break;
+                    }
+                    combo = 0;
+                }
+
+                combo++;
+                color = block ? block.color : null;
+                blocks.push(block);
+            }
+            if (blocks.length < 4) blocks.splice(-combo);
+            toRemove.push(...blocks);
+        });
+        const indexes = toRemove.map(block => {
+            let cords;
+            this.grid.forEach((row, x) => {
+                row.forEach((b, y) => {
+                    if (b.pos[0] == block.pos[0] && b.pos[1] == block.pos[1]) {
+                        cords = [x, y];
+                    }
+                });
+            });
+            return cords;
+        });
+        indexes.forEach(([x, y]) => {
+            delete this.grid[x][y];
+        });
+    }
+
+    scanCombos() {
+        this.scanSquare(this.activeRow, this.activeCol);
+        this.scanSquare(this.activeRow-1, this.activeCol);
+        this.scanSquare(this.activeRow, this.activeCol+1);
+    }
+
     checkCollision() {
         if (!this.activePill) return;
         const collision = () => {
@@ -95,6 +145,7 @@ export class Game {
                 this.grid[this.activeRow - 1][this.activeCol] = this.activePill.blocks.shift();
             }
             this.activePill = null;
+            this.scanCombos();
         }
     }
 
@@ -147,7 +198,9 @@ export class Game {
             this.activePill.updatePos(posChange);
             this.activeCol--;
             this.pauseInput();
+            return true;
         }
+        return false;
     }
 
     handleInput() {
@@ -173,8 +226,8 @@ export class Game {
                 this.activePill.rotate(1);
                 this.pauseInput();
             } else if (this.activeRow != 0 && !this.input.keydown('d', 'arrowright')) {
-                this.moveLeft();
-                this.handleInput();
+                if (this.moveLeft())
+                    this.handleInput();
             }
         }
 
@@ -185,8 +238,8 @@ export class Game {
                 this.activePill.rotate(-1);
                 this.pauseInput();
             } else if (this.activeRow != 0 && !this.input.keydown('d', 'arrowright')) {
-                this.moveLeft();
-                this.handleInput();
+                if (this.moveLeft())
+                    this.handleInput();
             }
         }
 
