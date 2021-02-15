@@ -68,7 +68,7 @@ export class Game {
     }
 
     pauseInput() {
-        // if (this.inputTimeout) clearTimeout(this.inputTimeout);
+        if (this.inputTimeout) clearTimeout(this.inputTimeout);
         this.inputActive = false;
         this.inputTimeout = setTimeout(() => {
             this.inputActive = true;
@@ -82,6 +82,8 @@ export class Game {
         const toRemove = [];
 
         lines.forEach(line => {
+            if (!line) return;
+
             let combo = 0;
             let color = null;
             const blocks = [];
@@ -244,7 +246,15 @@ export class Game {
         }
 
         if (this.input.keydown('s', 'arrowdown')) {
-            this.drop();
+            this.drop()
+            const dropping = setInterval(() => {
+                if (this.activeRow == 0) {
+                    clearInterval(dropping);
+                    return;
+                }
+                this.drop();
+            }, 10)
+            
         }
     }
 
