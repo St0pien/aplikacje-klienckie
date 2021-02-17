@@ -1,5 +1,6 @@
 import { Input } from './Input.js';
 import { Pill } from './Pill.js';
+import { Virus } from './Virus.js';
 
 export class Game {
     constructor() {
@@ -21,6 +22,7 @@ export class Game {
         this.grid = this.grid.map(() => new Array(8));
         this.dropDelay = 1000;
         this.shouldDrop = false;
+        this.viruses = 5;
     }
 
     addGameObject(...objects) {
@@ -31,11 +33,28 @@ export class Game {
         return this.colors[Math.floor(Math.random() * this.colors.length)];
     }
 
+    spawnViruses() {
+        const colors = [...this.colors];
+        for (let i=0; i<this.viruses; i++) {
+            if (colors.length == 0) colors.push(...this.colors);
+            const colorIndex = Math.floor(Math.random() * colors.length);
+            const color = colors.splice(colorIndex, 1);
+            let r,c;
+            do {
+                [r, c] = [10, 8].map(size => Math.floor(Math.random() * size));
+                r += 6;
+            } while (this.grid[r][c]);
+            this.grid[r][c] = new Virus([c*this.blockSize + this.xOffset, r*this.blockSize+this.yOffset], this.blockSize, color);
+        }
+    }
+
     start() {
         this.dropInterval = setInterval(() => {
             this.shouldDrop = true;
         }, this.dropDelay);
 
+        this.spawnViruses();
+        
         const loop = () => {
             if (performance.now() - this.lastUpdate >= 1 / 120 * 1000) {
                 setTimeout(() => {
