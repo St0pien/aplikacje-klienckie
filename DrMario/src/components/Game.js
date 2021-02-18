@@ -14,15 +14,16 @@ export class Game {
         this.blockSize = 25;
         this.xOffset = this.screen.width / 2 - this.blockSize * 4;
         this.yOffset = 150;
-        this.colors = ['red', 'blue', 'yellow'];
+        this.colors = ['red', 'yellow', 'blue'];
         this.activePill = null;
         this.activeRow = 0;
         this.activeCol = 3;
         this.grid = new Array(16).fill(0);
         this.grid = this.grid.map(() => new Array(8));
-        this.dropDelay = 1000;
+        this.dropDelay = 800;
         this.shouldDrop = false;
         this.viruses = 5;
+        this.pillId = 0;
     }
 
     addGameObject(...objects) {
@@ -81,7 +82,8 @@ export class Game {
         const x = 3 * this.blockSize + this.xOffset;
         const y = this.yOffset;
         const colors = Array.from({ length: 2 }, () => this.randomColor());
-        this.activePill = new Pill([x, y], this.blockSize, 0, colors);
+        this.pillId++;
+        this.activePill = new Pill(this.pillId, [x, y], this.blockSize, 0, colors);
         this.activeCol = 3;
         this.activeRow = 0;
     }
@@ -92,6 +94,63 @@ export class Game {
         this.inputTimeout = setTimeout(() => {
             this.inputActive = true;
         }, this.inputDelay);
+    }
+
+    applyGravity() {
+        this.falling = true;
+        let dropped = false;
+        const interval = setInterval(() => {
+            for (let i=14; i>=0; i--) {
+                for (let j=0; j<8; j++) {
+                    const block = this.grid[i][j];
+                    
+                    if (!block) {
+                        continue;
+                    }
+                    if (!block.id) {
+                        continue;
+                    }
+                
+                    const blocksWithId = this.grid.reduce((acc, next) => [...acc, ...next]).filter(b => b && b.id == block.id).map(b => {
+                        let [c, r] = b.pos;
+                        c = (c - this.xOffset) / this.blockSize;
+                        r = (r - this.yOffset) / this.blockSize;
+                        return {
+                            r,
+                            c,
+                            block: b
+                        }
+                    });
+                    const canFall = blocksWithId.every(({ r, c }) => {
+                        if (r == 15) return false;
+
+                        const blockUnder = this.grid[r+1][c];
+                        if (blockUnder && blockUnder.id == block.id) return true;
+                        return !blockUnder;
+                    })
+
+                    if (!canFall) {
+                        continue;
+                    }
+
+                    blocksWithId.forEach(b => {
+                        delete this.grid[b.r][b.c];
+                        b.block.pos[1] += this.blockSize;
+                    });
+                    blocksWithId.forEach(b => {
+                        this.grid[b.r+1][b.c] = b.block;
+                    });
+                    dropped = true;
+                }
+            }
+
+            if (!dropped) {
+                clearInterval(interval);
+                this.falling = false;
+                this.scanCombos(true);
+            }
+            dropped = false;
+        }, 500);
     }
 
     scanSquare(x, y) {
@@ -138,12 +197,27 @@ export class Game {
         indexes.forEach(([x, y]) => {
             delete this.grid[x][y];
         });
+        return indexes.length > 0;
     }
 
-    scanCombos() {
-        this.scanSquare(this.activeRow, this.activeCol);
-        this.scanSquare(this.activeRow-1, this.activeCol);
-        this.scanSquare(this.activeRow, this.activeCol+1);
+    scanCombos(all=false) {
+        const results = [];
+        if (!all) {
+            results.push(this.scanSquare(this.activeRow, this.activeCol));
+            results.push(this.scanSquare(this.activeRow-1, this.activeCol));
+            results.push(this.scanSquare(this.activeRow, this.activeCol+1));
+        } else {
+            for (let i=0; i<16; i++) {
+                results.push(this.scanSquare(i, 0));
+            }
+            for (let i=0; i<8; i++) {
+                results.push(this.scanSquare(0, i));
+            }
+        }
+
+        if (results.findIndex(result => result) > -1) {
+            this.applyGravity();
+        }
     }
 
     checkCollision() {
@@ -278,7 +352,7 @@ export class Game {
     }
 
     update() {
-        if (this.inputActive) {
+        if (this.inputActive && this.activePill) {
             this.handleInput();
         }
 
@@ -287,11 +361,11 @@ export class Game {
             this.shouldDrop = false;
         }
 
-        if (!this.activePill) {
+        if (!this.activePill && !this.falling) {
             this.newPill();
         }
 
-        this.addGameObject(...this.activePill.blocks);
+        if (this.activePill) this.addGameObject(...this.activePill.blocks);
         const gridBlocks = this.grid.reduce((acc, next) => [...next, ...acc]).filter(block => block !== undefined);
         this.addGameObject(...gridBlocks);
     }

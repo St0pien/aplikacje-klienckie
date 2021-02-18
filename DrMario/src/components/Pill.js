@@ -1,7 +1,8 @@
 import { Block } from "./Block.js";
 
 export class Pill {
-    constructor(pos, size, orientation, colors) {
+    constructor(id, pos, size, orientation, colors) {
+        this.id = id;
         this.pos = pos;
         this.size = size;
         this.colors = colors;
@@ -21,7 +22,7 @@ export class Pill {
             } else {
                 y -= offset;
             }
-            this.blocks.push(new Block([x, y], this.size, this.colors[i]));
+            this.blocks.push(new Block([x, y], this.size, this.colors[i], this.id));
         }
     }
 

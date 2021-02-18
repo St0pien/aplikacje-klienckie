@@ -1,5 +1,6 @@
 export class Block {
-    constructor(pos, size, color) {
+    constructor(pos, size, color, id=null) {
+        this.id = id;
         this.pos = pos;
         this.size = size;
         this.color = color;
