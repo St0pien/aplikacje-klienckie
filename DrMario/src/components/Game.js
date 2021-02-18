@@ -150,7 +150,7 @@ export class Game {
                 this.scanCombos(true);
             }
             dropped = false;
-        }, 500);
+        }, 300);
     }
 
     scanSquare(x, y) {
@@ -252,7 +252,6 @@ export class Game {
         if (yb - this.yOffset + this.blockSize <= this.blockSize * 16) {
             this.activePill.updatePos([x, y + this.blockSize]);
             this.activeRow++;
-            this.checkCollision();
             this.pauseInput();
         }
     }
