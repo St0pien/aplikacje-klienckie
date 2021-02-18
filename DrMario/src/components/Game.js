@@ -39,7 +39,7 @@ export class Game {
         for (let i=0; i<this.viruses; i++) {
             if (colors.length == 0) colors.push(...this.colors);
             const colorIndex = Math.floor(Math.random() * colors.length);
-            const color = colors.splice(colorIndex, 1);
+            const color = colors.splice(colorIndex, 1)[0];
             let r,c;
             do {
                 [r, c] = [10, 8].map(size => Math.floor(Math.random() * size));
@@ -371,6 +371,7 @@ export class Game {
 
     draw() {
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.lineWidth = 0.5;
         for (let i = 0; i < 16; i++) {
             for (let j = 0; j < 8; j++) {
                 this.ctx.strokeRect(this.xOffset + j * this.blockSize, this.yOffset + i * this.blockSize, this.blockSize, this.blockSize);
