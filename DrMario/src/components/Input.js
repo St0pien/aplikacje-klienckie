@@ -2,6 +2,7 @@ export class Input {
     constructor() {
         this.keys = [];
         window.addEventListener('keydown', e => {
+            e.preventDefault();
             if (!e.repeat) {
                 this.keys.push(e.key.toLowerCase());
             }

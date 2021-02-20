@@ -1,6 +1,11 @@
 import { Input } from './Input.js';
 import { Pill } from './Pill.js';
 import { Virus } from './Virus.js';
+import { Sprite } from './Sprite.js';
+import { IMG } from './Imgs.js';
+import { Glass } from './Glass.js';
+import { MarioHand } from './MarioHand.js';
+import { Stats } from './Stats.js';
 
 export class Game {
     constructor() {
@@ -11,10 +16,10 @@ export class Game {
         this.lastUpdate = 0;
         this.screen = document.querySelector('#window');
         this.ctx = this.screen.getContext('2d');
-        this.blockSize = 25;
-        this.xOffset = this.screen.width / 2 - this.blockSize * 4;
-        this.yOffset = 150;
-        this.colors = ['red', 'yellow', 'blue'];
+        this.blockSize = 24;
+        this.xOffset = this.screen.width / 2 - this.blockSize * 4 + 24;
+        this.yOffset = 145;
+        this.colors = ['brown', 'yellow', 'blue'];
         this.activePill = null;
         this.activeRow = 0;
         this.activeCol = 3;
@@ -24,6 +29,10 @@ export class Game {
         this.shouldDrop = false;
         this.viruses = 5;
         this.pillId = 0;
+        this.background = new Sprite(IMG.background);
+        this.glass = new Glass(this.colors, [140, 400]);
+        this.marioHand = new MarioHand();
+        this.stats = new Stats(this.viruses, this.screen.width / 2);
     }
 
     addGameObject(...objects) {
@@ -76,14 +85,24 @@ export class Game {
 
     pause() {
         window.cancelAnimationFrame(this.frame);
+        document.querySelector('audio').pause();
+    }
+
+    preparePill() {
+        const colors = Array.from({ length: 2 }, () => this.randomColor());
+        const nextPill = new Pill(this.pillId, [0, 0], this.blockSize, 0, colors);
+        this.marioHand.preparePill(nextPill);
     }
 
     newPill() {
         const x = 3 * this.blockSize + this.xOffset;
         const y = this.yOffset;
-        const colors = Array.from({ length: 2 }, () => this.randomColor());
         this.pillId++;
-        this.activePill = new Pill(this.pillId, [x, y], this.blockSize, 0, colors);
+        this.waitingForPill = true;
+        this.marioHand.throw(x, y).then(pill => {
+            this.activePill = pill;
+            this.waitingForPill = false;
+        })
         this.activeCol = 3;
         this.activeRow = 0;
     }
@@ -107,14 +126,14 @@ export class Game {
                     if (!block) {
                         continue;
                     }
-                    if (!block.id) {
+                    if (block.id == null) {
                         continue;
                     }
                 
                     const blocksWithId = this.grid.reduce((acc, next) => [...acc, ...next]).filter(b => b && b.id == block.id).map(b => {
                         let [c, r] = b.pos;
-                        c = (c - this.xOffset) / this.blockSize;
-                        r = (r - this.yOffset) / this.blockSize;
+                        c = Math.round((c - this.xOffset) / this.blockSize);
+                        r = Math.round((r - this.yOffset) / this.blockSize);
                         return {
                             r,
                             c,
@@ -195,7 +214,28 @@ export class Game {
             return cords;
         });
         indexes.forEach(([x, y]) => {
-            delete this.grid[x][y];
+            this.grid[x][y].destroyed = true;
+            this.grid.reduce((acc, next) => [...acc, ...next]).forEach(b => {
+                if (!b || b.id == null) return;
+                if (b.id == this.grid[x][y].id) {
+                    b.single = true;
+                }
+            });
+            
+            setTimeout(() => {
+                if (this.grid[x][y]) {
+                    if (this.grid[x][y].id == null) { 
+                        this.stats.virusDown();
+                        if (this.stats.viruses == 0) {
+                            this.stats.win();
+                            setTimeout(() => {
+                                this.pause();
+                            }, 50);
+                        }
+                    }
+                }
+                delete this.grid[x][y];
+            }, 300)
         });
         return indexes.length > 0;
     }
@@ -241,6 +281,13 @@ export class Game {
             }
             this.activePill = null;
             this.scanCombos();
+
+            if (this.activeRow == 0) {
+                this.stats.lost();
+                setTimeout(() => {
+                    this.pause();
+                }, 50);
+            }
         }
     }
 
@@ -360,24 +407,26 @@ export class Game {
             this.shouldDrop = false;
         }
 
-        if (!this.activePill && !this.falling) {
+        if (!this.marioHand.pill) {
+            this.preparePill();
+        }
+
+        if (!this.activePill && !this.falling && !this.waitingForPill) {
             this.newPill();
         }
 
+        this.glass.update(this.grid);
+
+        this.addGameObject(this.background);
         if (this.activePill) this.addGameObject(...this.activePill.blocks);
         const gridBlocks = this.grid.reduce((acc, next) => [...next, ...acc]).filter(block => block !== undefined);
         this.addGameObject(...gridBlocks);
+        this.addGameObject(this.glass);
+        this.addGameObject(this.marioHand);
+        this.addGameObject(this.stats);
     }
 
     draw() {
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        this.ctx.lineWidth = 0.5;
-        for (let i = 0; i < 16; i++) {
-            for (let j = 0; j < 8; j++) {
-                this.ctx.strokeRect(this.xOffset + j * this.blockSize, this.yOffset + i * this.blockSize, this.blockSize, this.blockSize);
-            }
-        }
-
         this.gameObjects.forEach(gameObject => {
             gameObject.draw(this.ctx);
         });

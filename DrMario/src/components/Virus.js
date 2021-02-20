@@ -1,14 +1,20 @@
 import { Block } from './Block.js';
+import { AnimatedSprite } from './Sprite.js';
+import { IMG, CORDS } from './Imgs.js';
 
 export class Virus extends Block {
     constructor(pos, size, color) {
         super(pos, size, color);
+        this.sprite = new AnimatedSprite(IMG[`${this.color}Virus`], 0, 2, CORDS.virus, CORDS.virus, 300);
     }
 
     draw(ctx) {
-        super.draw(ctx);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(this.pos[0]+this.size/4, this.pos[1]+this.size/4, this.size/2, this.size/2)
+        if (this.destroyed) {
+            this.sprite.cancelAnimation();
+            this.sprite.yOffset = CORDS.virus;
+        } 
+
+        const [x, y] = this.pos;
+        this.sprite.draw(ctx, x, y);
     }
 }

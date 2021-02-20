@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
 * {
     box-sizing: border-box;
     font-family: 'Press Start 2P', cursive;
@@ -15,4 +13,22 @@ body {
 
 #window {
     border: 2px solid rgb(145, 145, 145);
+}
+
+button {
+    margin: 2em;
+    font-size: 2em;
+    padding: .5em;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+}
+
+button:hover {
+    border: 4px solid white;
+}
+
+button:active {
+    border: 4px inset white;
+    color: rgb(165, 165, 165);
 }

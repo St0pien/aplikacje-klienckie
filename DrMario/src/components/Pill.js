@@ -15,14 +15,25 @@ export class Pill {
     generateBlocks() {
         this.blocks = [];
         let [x, y] = this.pos;
+        let rotation;
         for (let i = 0; i < 2; i++) {
             const offset = 0 + i * this.size;
             if (this.orientation % 2 == 0) {
                 x += offset;
+                if (i == 0) {
+                    rotation = 0;
+                } else {
+                    rotation = 2;
+                }
             } else {
                 y -= offset;
+                if (i == 0) {
+                    rotation = 1;
+                } else {
+                    rotation = 3;
+                }
             }
-            this.blocks.push(new Block([x, y], this.size, this.colors[i], this.id));
+            this.blocks.push(new Block([x, y], this.size, this.colors[i], this.id, rotation));
         }
     }
 
