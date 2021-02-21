@@ -33,7 +33,7 @@ export class Glass {
     update(grid) {
         const blocks = grid.reduce((acc, next) => [...acc, ...next]);
         this.colors = this.colors.filter(({ color }) => {
-            if (blocks.findIndex(b => b && !b.id && b.color == color) > -1) {
+            if (blocks.findIndex(b => b && b.id == null && b.color == color) > -1) {
                 return true;
             }
         });

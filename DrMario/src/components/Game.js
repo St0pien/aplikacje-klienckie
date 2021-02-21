@@ -228,6 +228,7 @@ export class Game {
                         this.stats.virusDown();
                         if (this.stats.viruses == 0) {
                             this.stats.win();
+                            this.glass.update(this.grid);
                             setTimeout(() => {
                                 this.pause();
                             }, 50);
