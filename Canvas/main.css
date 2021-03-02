@@ -1,0 +1,13 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    padding-top: 3em;
+}
+
+#canvas {
+    border: 2px solid black;
+}
